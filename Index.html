@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/2.0.2/luxon.min.js"></script>
+    <title>Telegram Table Formatter</title>
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Telegram Table Formatter</h2>
+
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="total">Total Amount:</label>
+            <input type="number" id="total" value="100" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="cutPercent">Cut (%):</label>
+            <input type="number" id="cutPercent" value="4" class="form-control">
+        </div>
+
+        <button class="btn btn-primary" onclick="formatForTelegram()">Format for Telegram</button>
+
+        <textarea id="output" rows="10" class="form-control mt-3" readonly></textarea>
+        <button class="btn btn-success mt-2" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </div>
+
+    <script>
+        const nowInEST = luxon.DateTime.now().setZone('America/New_York');
+        const currentDateInEST = nowInEST.toISODate();
+        document.getElementById("date").value = currentDateInEST;
+
+        function formatWithOrdinal(dateStr) {
+            const date = new Date(dateStr);
+            const day = date.getDate();
+            let suffix = "th";
+            if (day % 10 == 1 && day != 11) {
+                suffix = "st";
+            } else if (day % 10 == 2 && day != 12) {
+                suffix = "nd";
+            } else if (day % 10 == 3 && day != 13) {
+                suffix = "rd";
+            }
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return `${day}${suffix} ${monthNames[date.getMonth()]}`;
+        }
+
+        function formatForTelegram() {
+            const dateInput = document.getElementById("date").value;
+            const date = formatWithOrdinal(dateInput);
+            const totalAmount = parseFloat(document.getElementById("total").value);
+            const cutPercent = parseFloat(document.getElementById("cutPercent").value);
+
+            const cutAmount = (totalAmount * cutPercent) / 100;
+            const finalAmount = totalAmount - cutAmount;
+
+            const formattedText = `
+\`\`
+| Date   | ${date}    |
+|--------|------------|
+| Total  | $${totalAmount.toFixed(2)} |
+|--------|------------|
+| Cut    | $${cutAmount.toFixed(2)}   |
+|--------|------------|
+| Final  | $${finalAmount.toFixed(2)}  |
+|--------|------------|
+\`\`
+`;
+
+            document.getElementById("output").value = formattedText;
+        }
+
+        function copyToClipboard() {
+            const outputTextarea = document.getElementById("output");
+            outputTextarea.select();
+            document.execCommand("copy");
+        }
+    </script>
+
+    <!-- Optional: Include the jQuery library, then Bootstrap JS library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
